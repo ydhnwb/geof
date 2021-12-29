@@ -1,3 +1,16 @@
+# Ingfo
+- Polygon dimuat secara manual. (get axios ke kml, lalu simpan di variable state sbg geoJSON). Baru dibuat polygon ke mapsnya. Bukan lewat <KMLLayer bawaan library). Alasannya adalah <KMLLayer/> sangat terbatas dan tidak bisa diextract setelah diload (atau tidak ada petunjuk yg jelas cara ekstraknya).
+- Urutan di turf itu longitude terlebih dahulu, baru latitude. Jika ada array seperti ini [xxx, aaaa] maka xxx adalah longitude, dan aaaa adalah latitude. Harap berhati-hati jika menemukan Object.values dari array of object, pastikan key nya adalah lng terlebih dahulu, baru latitude.
+- Penghitungan line, jarak dan sebagainya menggunakan turfjs.
+- Tidak semua library turf dipakai, aku hanya pakai yg diperlukan saja. (Cek bagian import)
+- Library maps menggunakan [@react-google-maps/api](https://www.npmjs.com/package/@react-google-maps/api), karena yang react-google-maps biasa sudah tidak dimaintain lagi. Tapi seharusnya fungsi2 nya masih sama krn @react-google-maps/api adalah versi rewrite dari react-google-maps.
+- Dokumentasi @react-google-maps/api ada [di sini](https://react-google-maps-api-docs.netlify.app/)
+
+# Thread atau referensi penting
+- [turf js docs](https://turfjs.org/docs/).
+- [github discussion/issue terkait ini](https://github.com/Turfjs/turf/issues/2002)
+- 
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
