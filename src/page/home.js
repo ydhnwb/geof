@@ -10,7 +10,7 @@ import { polygon, point, lineString, multiLineString } from '@turf/helpers'
 import booleanPointInPolygon from '@turf/boolean-point-in-polygon'
 import length from '@turf/length'
 import along from '@turf/along'
-import { wait } from '@testing-library/user-event/dist/utils';
+import iotData from './../modified.txt'
 
 const options = {
     fillColor: "rgba(245, 208, 39, 0.24)",
@@ -32,48 +32,57 @@ const containerStyle = {
 };
 
 const center = {
-    lat: -6.1607688,
-    lng: 106.7863639
+    // lat: -6.1607688,
+    // lng: 106.7863639
+    lat: -3.12338,
+    lng: 107.992462
 };
 
+
+// const position = {
+//     lat: -6.156449,
+//     lng: 106.764307,
+// }
 
 const position = {
-    lat: -6.156449,
-    lng: 106.764307,
+    lat: -3.12338,
+    lng: 107.992462
 }
 
-const path = [
-    { lat: -6.160449033283874, lng: 106.7651164617285 },
-    { lat: -6.159202564181113, lng: 106.77591762837375 },
-    { lat: -6.159202564181113, lng: 106.78083601390364 },
-    { lat: -6.156613736991455, lng: 106.78614016081093 },
-    { lat: -6.161983145084618, lng: 106.79356596124245 },
-    { lat: -6.1601613868276095, lng: 106.80330629850624 }
+// const pathX = [
+//     { lat: -6.160449033283874, lng: 106.7651164617285 },
+//     { lat: -6.159202564181113, lng: 106.77591762837375 },
+//     { lat: -6.159202564181113, lng: 106.78083601390364 },
+//     { lat: -6.156613736991455, lng: 106.78614016081093 },
+//     { lat: -6.161983145084618, lng: 106.79356596124245 },
+//     { lat: -6.1601613868276095, lng: 106.80330629850624 }
 
-];
+// ];
 
 
-const optionsLine = {
-    strokeColor: '#FF0000',
-    strokeOpacity: 0.8,
-    strokeWeight: 2,
-    fillColor: '#FF0000',
-    fillOpacity: 0.35,
-    clickable: false,
-    draggable: false,
-    editable: false,
-    visible: true,
-    radius: 30000,
-    paths: path,
-    zIndex: 1
-};
+// const optionsLine = {
+//     strokeColor: '#FF0000',
+//     strokeOpacity: 0.8,
+//     strokeWeight: 2,
+//     fillColor: '#FF0000',
+//     fillOpacity: 0.35,
+//     clickable: false,
+//     draggable: false,
+//     editable: false,
+//     visible: true,
+//     radius: 30000,
+//     paths: pathX,
+//     zIndex: 1
+// };
 
 
 
 
 const key = "AIzaSyDMQJ7S1QtdJ6Njb8JK3hlIjWp-J8Erzzs"
 // const exampleKML = 'https://gist.githubusercontent.com/ydhnwb/c6b23a596af954d19764a803940be2d8/raw/3d0f2167d545d5b2daec23c851add9999283d72f/MyProject1.kml'
-const exampleKML = "https://gist.githubusercontent.com/ydhnwb/ef97d2b0e833c39c2caedf2e56902282/raw/2a51e0a4c6291dd91d872e64d4552cad192bdf36/perfect_circle.kml"
+// const exampleKML = "https://gist.githubusercontent.com/ydhnwb/ef97d2b0e833c39c2caedf2e56902282/raw/2a51e0a4c6291dd91d872e64d4552cad192bdf36/perfect_circle.kml"
+const exampleKML = "https://gist.githubusercontent.com/ydhnwb/8fa103f2ecd92b0a016181be26f5377d/raw/e1dc369fdf8792e64ab2c4b9c2b197ad57152368/babel.kml"
+const iotURL = "https://gist.githubusercontent.com/ydhnwb/a022a1e2e7f17fad51548ba2103e67dd/raw/8b59d0801bc71ece09fc421b62fd8e08015412df/iot_data_1.txt"
 
 const HomePage = () => {
 
@@ -84,6 +93,51 @@ const HomePage = () => {
     const [geoJSON, setGeoJSON] = useState()
 
     const [historyPoint, setHistoryPoint] = useState()
+    const [path, setPath] = useState([])
+
+    const optionsLine = {
+        // lat: -6.1607688,
+        // lng: 106.7863639
+        strokeColor: '#FF0000',
+        strokeOpacity: 0.8,
+        strokeWeight: 2,
+        fillColor: '#FF0000',
+        fillOpacity: 0.35,
+        clickable: false,
+        draggable: false,
+        editable: false,
+        visible: true,
+        radius: 30000,
+        paths: path,
+        zIndex: 1
+    };
+
+    const fetchIOTData = async () => {
+        const result = await axios
+            .get(iotURL)
+            .then(r => {
+                const rx = r.data
+                const arr = rx.split('\n')
+                const temps = []
+                for (let i = 0; i < arr.length; i++) {
+                    const spl = arr[i].split(',')
+                    temps.push({
+                        lat: parseFloat(spl[2]),
+                        lng: parseFloat(spl[3])
+                    })
+                }
+                return temps;
+            })
+            .catch(e => {
+                console.log('error' + e);
+                return null;
+            });
+
+        // console.log(result[0])
+        setPath(result)
+    }
+
+
 
     const constructHistory = () => {
         const temp = []
@@ -123,8 +177,10 @@ const HomePage = () => {
                 lng: nMeter.geometry.coordinates[0],
 
             }
+
+            getDistanceFromArea(obj)
             setHistoryPoint({ ...historyPoint, ...obj })
-        }, 0.5 * i)
+        }, 5 * i)
     }
 
     const onLoad = (e) => {
@@ -135,6 +191,20 @@ const HomePage = () => {
         const res = await fetchKML()
         const parsedKML = new DOMParser().parseFromString(res);
         setGeoJSON(kml(parsedKML))
+    }
+
+    const getDistanceFromArea = (e) => {
+        const lat = e.lat
+        const lng = e.lng
+        const pt = point([lng, lat])
+        const extractedCoord = extractPolygons()
+        if (extractedCoord != null) {
+            const coordinates = extractedCoord.map((f) => Object.values(f))
+            const poly = polygon([coordinates])
+            const b = booleanPointInPolygon(pt, poly)
+            setInsideFench(b)
+        }
+        setSelectedPosition({ lat, lng })
     }
 
     const onMapClick = async (e) => {
@@ -220,7 +290,8 @@ const HomePage = () => {
     }, [selectedPosition])
 
     useEffect(() => {
-        // constructHistory()
+
+        fetchIOTData()
     }, [])
 
     return (
@@ -270,6 +341,7 @@ const HomePage = () => {
                     </>
                 </GoogleMap>
             </LoadScript>
+
             <h4 style={{ position: 'absolute', top: 0 }}>{isInsideFench ? "Anda di dalam polygon" : "Anda di luar polygon"}</h4>
             <h4 style={{ position: 'absolute', top: 0, right: 0, marginRight: 56 }}>{distanceToArea ? `Anda ${distanceToArea}km dari area` : "-"}</h4>
             <SimulateButton />
